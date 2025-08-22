@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Análise Competitiva - SUVs Compactos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f7ff 0%, #e8f0ff 100%);
+            color: #2c3e50;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: rgba(255,255,255,0.9);
+            border-radius: 15px;
+            padding: 8px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            border: none;
+            background: transparent;
+            color: #64748b;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: 120px;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255,255,255,0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .progress-container {
+            margin: 15px 0;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease-out 0.3s;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .score-excellent { background: linear-gradient(135deg, #10b981, #059669); }
+        .score-good { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .score-average { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .score-poor { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        .icon-excellent { background: linear-gradient(135deg, #10b981, #059669); }
+        .icon-good { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .icon-average { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .icon-poor { background: linear-gradient(135deg, #ef4444, #dc2626); }
+
+        .insights-section {
+            background: rgba(255,255,255,0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            margin: 30px 0;
+        }
+
+        .insights-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .insights-title i {
+            margin-right: 12px;
+            color: #667eea;
+        }
+
+        .insight-box {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .insight-priority {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .priority-high { background: #fef2f2; color: #dc2626; }
+        .priority-medium { background: #fffbeb; color: #d97706; }
+        .priority-low { background: #f0fdf4; color: #059669; }
+
+        .swot-matrix {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .swot-quadrant {
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .swot-strengths { background: linear-gradient(135deg, #10b981, #059669); }
+        .swot-weaknesses { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .swot-opportunities { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .swot-threats { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+        .swot-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .swot-title i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+
+        .swot-list {
+            list-style: none;
+        }
+
+        .swot-list li {
+            padding: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            opacity: 0.95;
+        }
+
+        .swot-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .w2h-matrix {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .w2h-item {
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            position: relative;
+        }
+
+        .w2h-what { background: linear-gradient(135deg, #10b981, #059669); }
+        .w2h-why { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .w2h-who { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+        .w2h-where { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .w2h-how { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .w2h-howmuch { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+
+        .complaints-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .complaint-card {
+            background: rgba(255,255,255,0.95);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #ef4444;
+        }
+
+        .complaint-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .complaint-text {
+            font-size: 0.9rem;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
+        .ads-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .ad-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .ad-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .ad-image {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .ad-content {
+            padding: 15px;
+        }
+
+        .ad-platform {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .ad-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .ad-description {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .swot-matrix,
+            .w2h-matrix {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Dashboard Análise Competitiva</h1>
+            <p>SUVs Compactos - Fiat vs Volkswagen | Análise Estratégica 2025</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('ads')">
+                <i class="fas fa-bullhorn"></i> Análise de Anúncios
+            </button>
+            <button class="tab-button" onclick="showTab('complaints')">
+                <i class="fas fa-exclamation-triangle"></i> Reclamações
+            </button>
+            <button class="tab-button" onclick="showTab('swot')">
+                <i class="fas fa-chess"></i> Análise SWOT
+            </button>
+            <button class="tab-button" onclick="showTab('5w2h')">
+                <i class="fas fa-tasks"></i> Análise 5W2H
+            </button>
+        </div>
+
+        <!-- ABA 1: ANÁLISE DE ANÚNCIOS -->
+        <div id="ads" class="tab-content active">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="card-header">
+                        <div class="card-icon icon-excellent">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <div class="card-title">Fiat Fastback/Pulse - Investimento Digital</div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Performance Geral</span>
+                            <span>85%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill score-excellent" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #64748b;">Forte presença em híbridos e tecnologia, lançamento estratégico em 2024</p>
+                </div>
+
+                <div class="metric-card">
+                    <div class="card-header">
+                        <div class="card-icon icon-good">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div class="card-title">Volkswagen Tera - Investimento Digital</div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Performance Geral</span>
+                            <span>72%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill score-good" style="width: 72%"></div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #64748b;">Boa estrutura de marketing, mas com desafios de qualidade</p>
+                </div>
+            </div>
+
+            <div class="ads-grid">
+                <div class="ad-card">
+                    <div class="ad-image">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <div class="ad-content">
+                        <div class="ad-platform">Google Ads</div>
+                        <div class="ad-title">Fiat Fastback Híbrido 2024</div>
+                        <div class="ad-description">Novo SUV híbrido com até 15,6% mais economia. Motor 1.0 turbo + tecnologia híbrida-leve.</div>
+                    </div>
+                </div>
+
+                <div class="ad-card">
+                    <div class="ad-image">
+                        <i class="fab fa-facebook"></i>
+                    </div>
+                    <div class="ad-content">
+                        <div class="ad-platform">Meta Ads</div>
+                        <div class="ad-title">Pulse: O SUV que você esperava</div>
+                        <div class="ad-description">Design arrojado, tecnologia avançada e eficiência híbrida. Conheça o futuro dos SUVs.</div>
+                    </div>
+                </div>
+
+                <div class="ad-card">
+                    <div class="ad-image">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <div class="ad-content">
+                        <div class="ad-platform">Google Ads</div>
+                        <div class="ad-title">VW Tera - Plano Sempre Novo</div>
+                        <div class="ad-description">Entrada reduzida, parcelas flexíveis. O SUV compacto da Volkswagen com condições especiais.</div>
+                    </div>
+                </div>
+
+                <div class="ad-card">
+                    <div class="ad-image">
+                        <i class="fab fa-facebook"></i>
+                    </div>
+                    <div class="ad-content">
+                        <div class="ad-platform">Meta Ads</div>
+                        <div class="ad-title">Tera: Seu novo companheiro</div>
+                        <div class="ad-description">Conectividade, segurança e design alemão. Descubra o Tera com até 0% de juros.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="insights-section">
+                <h3 class="insights-title">
+                    <i class="fas fa-lightbulb"></i>
+                    Insights Estratégicos - Anúncios
+                </h3>
+                <div class="insight-box">
+                    <span class="insight-priority priority-high">ALTA PRIORIDADE</span>
+                    <h4>Foco em Tecnologia Híbrida</h4>
+                    <p>A Fiat está investindo pesadamente na comunicação de seus modelos híbridos, destacando economia de combustível (até 15,6% com etanol). Esta é uma vantagem competitiva clara sobre o Tera.</p>
+                </div>
+                <div class="insight-box">
+                    <span class="insight-priority priority-medium">MÉDIA PRIORIDADE</span>
+                    <h4>Estratégia de Financiamento VW</h4>
+                    <p>O Volkswagen Tera aposta forte no "Plano Sempre Novo" com entrada reduzida e parcelas flexíveis, competindo no aspecto financeiro.</p>
+                </div>
+                <div class="insight-box">
+                    <span class="insight-priority priority-high">ALTA PRIORIDADE</span>
+                    <h4>Timing de Lançamento</h4>
+                    <p>O lançamento dos híbridos Fiat em novembro 2024 representa uma janela de oportunidade para dominar o segmento antes da resposta da concorrência.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 2: ANÁLISE DE RECLAMAÇÕES -->
+        <div id="complaints" class="tab-content">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="card-header">
+                        <div class="card-icon icon-good">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="card-title">Fiat - Índice de Satisfação</div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Satisfação Geral</span>
+                            <span>78%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill score-good" style="width: 78%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="card-header">
+                        <div class="card-icon icon-average">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="card-title">Volkswagen Tera - Índice de Satisfação</div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Satisfação Geral</span>
+                            <span>65%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill score-average" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="color: #2c3e50; margin: 30px 0 20px;">Top 10 Reclamações - Volkswagen Tera</h3>
+            <div class="complaints-grid">
+                <div class="complaint-card">
+                    <div class="complaint-title">Problemas de Segurança</div>
+                    <div class="complaint-text">Cinto de segurança do passageiro sem regulagem, causando desconforto e riscos de segurança para pessoas de baixa estatura.</div>
+                </div>
+
+                <div class="complaint-card">
+                    <div class="complaint-title">Defeitos de Design</div>
+                    <div class="complaint-text">Tampa do porta-mala projetada para fora do para-choque, causando problemas estéticos e funcionais.</div>
+                </div>
+
+                <div class="complaint-card">
+                    <div class="complaint-title">Atrasos na Entrega</div>
+                    <div class="complaint-text">Demoras excessivas na entrega de veículos comprados, com falta de comunicação adequada sobre prazos.</div>
+                </div>
+
+                <div class="complaint-card">
+                    <div class="complaint-title">Ruídos Anômalos</div>
+                    <div class="complaint-text">Veículos novos apresentando barulhos estranhos sem solução efetiva das concessionárias.</div>
+                </div>
+
+                <div class="complaint-card">
+                    <div class="complaint-title">Defeitos de Fábrica</div>
+                    <div class="complaint-text">Carros zero km entregues com arranhões, parafusos soltos e outras falhas de qualidade.</div>
+                </div>
+
+                <div class="complaint-card">
+                    <div class="complaint-title">Problemas de Preço</div>
+                    <div class="complaint-text">Aumentos de preço após fechamento de negócio e perda de descontos prometidos.</div>
+                </div>
+
+                <div class="complaint-card">
+                    <div class="complaint-title">Falhas ADAS</div>
+                    <div class="complaint-text">Sistemas de assistência à condução (ADAS) e controle adaptativo de cruzeiro (ACC) com mau funcionamento.</div>
+                </div>
+
+                <div class="complaint-card">
+                    <div class="complaint-title">Problemas de Iluminação</div>
+                    <div class="complaint-text">Faróis com defeitos e funcionamento irregular, comprometendo a segurança noturna.</div>
+                </div>
+
+                <div class="complaint-card">
+                    <div class="complaint-title">Atendimento Pós-Venda</div>
+                    <div class="complaint-text">Falta de suporte adequado das concessionárias para resolução de problemas técnicos.</div>
+                </div>
+
+                <div class="complaint-card">
+                    <div class="complaint-title">Ergonomia Inadequada</div>
+                    <div class="complaint-text">Descanso de braço com formato inadequado e outros problemas de conforto interno.</div>
+                </div>
+            </div>
+
+            <div class="insights-section">
+                <h3 class="insights-title">
+                    <i class="fas fa-chart-bar"></i>
+                    Comparativo de Fraquezas
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <div>
+                        <h4 style="color: #2c3e50; margin-bottom: 15px;">Fraquezas VW Tera</h4>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li style="padding: 8px 0; color: #ef4444;">• Problemas críticos de segurança</li>
+                            <li style="padding: 8px 0; color: #ef4444;">• Defeitos de qualidade recorrentes</li>
+                            <li style="padding: 8px 0; color: #ef4444;">• Falhas em sistemas avançados</li>
+                            <li style="padding: 8px 0; color: #ef4444;">• Atendimento pós-venda deficiente</li>
+                            <li style="padding: 8px 0; color: #ef4444;">• Problemas de ergonomia</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 style="color: #2c3e50; margin-bottom: 15px;">Fraquezas Fiat Fastback/Pulse</h4>
+                        <ul style="list-style: none; padding-left: 0;">
+                            <li style="padding: 8px 0; color: #f59e0b;">• Preço premium dos híbridos</li>
+                            <li style="padding: 8px 0; color: #f59e0b;">• Tecnologia nova (incerteza)</li>
+                            <li style="padding: 8px 0; color: #f59e0b;">• Rede de serviços para híbridos</li>
+                            <li style="padding: 8px 0; color: #f59e0b;">• Competição com modelos próprios</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 3: ANÁLISE SWOT -->
+        <div id="swot" class="tab-content">
+            <div class="swot-matrix">
+                <div class="swot-quadrant swot-strengths">
+                    <h3 class="swot-title">
+                        <i class="fas fa-muscle"></i>
+                        FORÇAS
+                    </h3>
+                    <ul class="swot-list">
+                        <li>Tecnologia híbrida pioneira no segmento</li>
+                        <li>Economia de combustível superior (15,6%)</li>
+                        <li>Design diferenciado e moderno</li>
+                        <li>Marca consolidada no Brasil</li>
+                        <li>Portfólio diversificado (Fastback + Pulse)</li>
+                        <li>Timing de lançamento estratégico</li>
+                    </ul>
+                </div>
+
+                <div class="swot-quadrant swot-weaknesses">
+                    <h3 class="swot-title">
+                        <i class="fas fa-exclamation-circle"></i>
+                        FRAQUEZAS
+                    </h3>
+                    <ul class="swot-list">
+                        <li>Preço premium dos modelos híbridos</li>
+                        <li>Tecnologia nova sem histórico</li>
+                        <li>Dependência de fornecedores de baterias</li>
+                        <li>Rede de assistência técnica especializada limitada</li>
+                        <li>Competição interna entre Fastback e Pulse</li>
+                        <li>Custo de manutenção potencialmente maior</li>
+                    </ul>
+                </div>
+
+                <div class="swot-quadrant swot-opportunities">
+                    <h3 class="swot-title">
+                        <i class="fas fa-lightbulb"></i>
+                        OPORTUNIDADES
+                    </h3>
+                    <ul class="swot-list">
+                        <li>Crescimento do mercado de SUVs compactos</li>
+                        <li>Demanda por veículos sustentáveis</li>
+                        <li>Problemas de qualidade do concorrente VW</li>
+                        <li>Incentivos governamentais para híbridos</li>
+                        <li>Primeira marca com híbrido no segmento</li>
+                        <li>Parcerias para infraestrutura verde</li>
+                    </ul>
+                </div>
+
+                <div class="swot-quadrant swot-threats">
+                    <h3 class="swot-title">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        AMEAÇAS
+                    </h3>
+                    <ul class="swot-list">
+                        <li>Entrada de concorrentes híbridos</li>
+                        <li>Volatilidade dos preços de combustível</li>
+                        <li>Mudanças na regulamentação automotiva</li>
+                        <li>Recessão econômica e redução de crédito</li>
+                        <li>Concorrência de veículos elétricos</li>
+                        <li>Problemas na cadeia de suprimentos global</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="insights-section">
+                <h3 class="insights-title">
+                    <i class="fas fa-chess-knight"></i>
+                    Estratégias Recomendadas
+                </h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                    <div class="insight-box">
+                        <h4 style="color: #10b981;">ESTRATÉGIAS FO (Forças + Oportunidades)</h4>
+                        <ul style="margin-top: 10px;">
+                            <li>Acelerar campanha de lançamento dos híbridos aproveitando problemas do Tera</li>
+                            <li>Posicionar como líder em sustentabilidade no segmento</li>
+                            <li>Expandir rapidamente para capturar market share</li>
+                        </ul>
+                    </div>
+
+                    <div class="insight-box">
+                        <h4 style="color: #ef4444;">ESTRATÉGIAS FA (Forças + Ameaças)</h4>
+                        <ul style="margin-top: 10px;">
+                            <li>Criar barreira de entrada com tecnologia proprietária</li>
+                            <li>Desenvolver parcerias estratégicas de longo prazo</li>
+                            <li>Investir em P&D para próxima geração</li>
+                        </ul>
+                    </div>
+
+                    <div class="insight-box">
+                        <h4 style="color: #3b82f6;">ESTRATÉGIAS DO (Fraquezas + Oportunidades)</h4>
+                        <ul style="margin-top: 10px;">
+                            <li>Desenvolver versões de entrada mais acessíveis</li>
+                            <li>Ampliar rede de assistência técnica especializada</li>
+                            <li>Criar programa de garantia estendida</li>
+                        </ul>
+                    </div>
+
+                    <div class="insight-box">
+                        <h4 style="color: #f59e0b;">ESTRATÉGIAS DA (Fraquezas + Ameaças)</h4>
+                        <ul style="margin-top: 10px;">
+                            <li>Diversificar fornecedores de componentes híbridos</li>
+                            <li>Desenvolver planos de financiamento competitivos</li>
+                            <li>Acelerar curva de aprendizado tecnológico</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">🎯 Roadmap Estratégico 2025</h4>
+                    <div style="background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 20px; border-radius: 12px;">
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; text-align: center;">
+                            <div>
+                                <div style="background: #10b981; color: white; padding: 8px; border-radius: 8px; margin-bottom: 8px;">Q1 2025</div>
+                                <small>Lançamento Híbridos</small>
+                            </div>
+                            <div>
+                                <div style="background: #3b82f6; color: white; padding: 8px; border-radius: 8px; margin-bottom: 8px;">Q2 2025</div>
+                                <small>Expansão Rede</small>
+                            </div>
+                            <div>
+                                <div style="background: #f59e0b; color: white; padding: 8px; border-radius: 8px; margin-bottom: 8px;">Q3 2025</div>
+                                <small>Versões Acessíveis</small>
+                            </div>
+                            <div>
+                                <div style="background: #ef4444; color: white; padding: 8px; border-radius: 8px; margin-bottom: 8px;">Q4 2025</div>
+                                <small>Consolidação Market</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ABA 4: ANÁLISE 5W2H -->
+        <div id="5w2h" class="tab-content">
+            <div class="w2h-matrix">
+                <div class="w2h-item w2h-what">
+                    <h3 class="swot-title">
+                        <i class="fas fa-question-circle"></i>
+                        WHAT (O QUÊ?)
+                    </h3>
+                    <ul class="swot-list">
+                        <li>Lançar campanha agressiva dos SUVs híbridos Fastback e Pulse</li>
+                        <li>Conquistar 25% do market share de SUVs compactos</li>
+                        <li>Estabelecer liderança em tecnologia híbrida</li>
+                        <li>Superar vendas do VW Tera em 12 meses</li>
+                    </ul>
+                </div>
+
+                <div class="w2h-item w2h-why">
+                    <h3 class="swot-title">
+                        <i class="fas fa-lightbulb"></i>
+                        WHY (POR QUÊ?)
+                    </h3>
+                    <ul class="swot-list">
+                        <li>VW Tera enfrenta problemas críticos de qualidade</li>
+                        <li>Demanda crescente por veículos sustentáveis</li>
+                        <li>Oportunidade única de ser pioneiro em híbridos</li>
+                        <li>Margem superior com tecnologia diferenciada</li>
+                    </ul>
+                </div>
+
+                <div class="w2h-item w2h-who">
+                    <h3 class="swot-title">
+                        <i class="fas fa-users"></i>
+                        WHO (QUEM?)
+                    </h3>
+                    <ul class="swot-list">
+                        <li>Equipe de Marketing Digital e Performance</li>
+                        <li>Gerência de Produto e Desenvolvimento</li>
+                        <li>Rede de concessionárias Fiat</li>
+                        <li>Parceiros de mídia e influenciadores</li>
+                    </ul>
+                </div>
+
+                <div class="w2h-item w2h-where">
+                    <h3 class="swot-title">
+                        <i class="fas fa-map-marker-alt"></i>
+                        WHERE (ONDE?)
+                    </h3>
+                    <ul class="swot-list">
+                        <li>Capitais e regiões metropolitanas (Fase 1)</li>
+                        <li>Cidades do interior com renda superior (Fase 2)</li>
+                        <li>Plataformas digitais (Google, Meta, YouTube)</li>
+                        <li>Concessionárias e test-drives</li>
+                    </ul>
+                </div>
+
+                <div class="w2h-item w2h-how">
+                    <h3 class="swot-title">
+                        <i class="fas fa-cogs"></i>
+                        HOW (COMO?)
+                    </h3>
+                    <ul class="swot-list">
+                        <li>Campanha digital integrada 360°</li>
+                        <li>Storytelling focado em sustentabilidade</li>
+                        <li>Programa de test-drive experiencial</li>
+                        <li>Parcerias com eco-influenciadores</li>
+                        <li>Garantia diferenciada e suporte técnico</li>
+                    </ul>
+                </div>
+
+                <div class="w2h-item w2h-howmuch">
+                    <h3 class="swot-title">
+                        <i class="fas fa-dollar-sign"></i>
+                        HOW MUCH (QUANTO?)
+                    </h3>
+                    <ul class="swot-list">
+                        <li>Investimento marketing: R$ 15 milhões (6 meses)</li>
+                        <li>ROI esperado: 300% em vendas incrementais</li>
+                        <li>Meta: 8.000 unidades vendidas no primeiro ano</li>
+                        <li>Break-even: 18 meses após lançamento</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="insights-section">
+                <h3 class="insights-title">
+                    <i class="fas fa-rocket"></i>
+                    Plano de Ação Prioritário
+                </h3>
+
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+                    <div class="insight-box">
+                        <span class="insight-priority priority-high">ALTA PRIORIDADE</span>
+                        <h4>Semanas 1-4: Preparação</h4>
+                        <ul style="margin-top: 10px; font-size: 0.9rem;">
+                            <li>Finalizar materiais de campanha</li>
+                            <li>Treinar equipe de vendas</li>
+                            <li>Configurar tracking e analytics</li>
+                            <li>Preparar estoque nas concessionárias</li>
+                        </ul>
+                    </div>
+
+                    <div class="insight-box">
+                        <span class="insight-priority priority-high">ALTA PRIORIDADE</span>
+                        <h4>Semanas 5-12: Lançamento</h4>
+                        <ul style="margin-top: 10px; font-size: 0.9rem;">
+                            <li>Campanha de teasing e pré-lançamento</li>
+                            <li>Evento de lançamento digital</li>
+                            <li>Ativação em mídias digitais</li>
+                            <li>Programa de test-drive nacional</li>
+                        </ul>
+                    </div>
+
+                    <div class="insight-box">
+                        <span class="insight-priority priority-medium">MÉDIA PRIORIDADE</span>
+                        <h4>Semanas 13-26: Consolidação</h4>
+                        <ul style="margin-top: 10px; font-size: 0.9rem;">
+                            <li>Otimização baseada em performance</li>
+                            <li>Expansão para mercados secundários</li>
+                            <li>Campanhas de retenção e fidelização</li>
+                            <li>Análise competitiva contínua</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px;">
+                    <h4 style="color: #2c3e50; margin-bottom: 15px;">📊 KPIs de Acompanhamento</h4>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+                        <div style="background: #10b981; color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold;">25%</div>
+                            <div style="font-size: 0.9rem;">Market Share Meta</div>
+                        </div>
+                        <div style="background: #3b82f6; color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold;">8.000</div>
+                            <div style="font-size: 0.9rem;">Unidades/Ano</div>
+                        </div>
+                        <div style="background: #f59e0b; color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold;">R$ 15M</div>
+                            <div style="font-size: 0.9rem;">Investimento</div>
+                        </div>
+                        <div style="background: #ef4444; color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                            <div style="font-size: 1.5rem; font-weight: bold;">300%</div>
+                            <div style="font-size: 0.9rem;">ROI Meta</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para trocar abas
+        function showTab(tabName) {
+            // Esconder todas as abas
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remover classe active de todos os botões
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => {
+                button.classList.remove('active');
+            });
+
+            // Mostrar aba selecionada
+            document.getElementById(tabName).classList.add('active');
+
+            // Ativar botão selecionado
+            event.target.classList.add('active');
+
+            // Animar progress bars quando a aba for mostrada
+            setTimeout(() => {
+                animateProgressBars();
+            }, 100);
+        }
+
+        // Função para animar progress bars
+        function animateProgressBars() {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach((bar, index) => {
+                setTimeout(() => {
+                    const width = bar.style.width;
+                    bar.style.width = '0%';
+                    setTimeout(() => {
+                        bar.style.width = width;
+                    }, 50);
+                }, index * 200);
+            });
+        }
+
+        // Animação inicial quando a página carrega
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                animateProgressBars();
+            }, 500);
+
+            // Adicionar efeito de hover nos cards
+            const cards = document.querySelectorAll('.metric-card, .ad-card, .complaint-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        });
+
+        // Adicionar evento de clique nos botões de tab
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                const tabName = this.textContent.trim().toLowerCase();
+                if (tabName.includes('anúncios')) {
+                    showTab('ads');
+                } else if (tabName.includes('reclamações')) {
+                    showTab('complaints');
+                } else if (tabName.includes('swot')) {
+                    showTab('swot');
+                } else if (tabName.includes('5w2h')) {
+                    showTab('5w2h');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
